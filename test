@@ -1,0 +1,21 @@
+#!/usr/bin/python3
+
+import svgmap
+from PIL import Image
+import msx1
+
+im = Image.new('RGBA', (100, 100), (255, 0, 0, 255))
+im.paste((0, 0, 255, 255), (25, 25, 50, 50))
+
+char = msx1.toRGBA(msx1.mkchar([0xf0, 0xf0, 0x78, 0x78, 0x3e, 0x3e, 0x1f, 0x1f], [0xf4, 0xf3, 0xe2, 0xe1, 0x04, 0x05, 0x06, 0x07]))
+
+doc = svgmap.svg(style = {'image-rendering': 'pixelated'})
+doc.add(im, (50, 50))
+t = ['Yes', 'No', 'Maybe']
+g = svgmap.g()
+for i, tt in enumerate(t):
+	g.add(tt, (0, 10 * i))
+doc.add(g, (0, 0))
+doc.add(g, (30, 0))
+doc.add(char, (20, 20))
+print(doc.svg((100, 200)))
