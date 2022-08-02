@@ -119,9 +119,9 @@ class g(Object):
 		# Add default attributes.
 		attrs = attrs.copy() # Don't change caller's object.
 		if 'width' not in attrs:
-			attrs['width'] = '%fmm' % size[0]
+			attrs['width'] = '%f' % size[0]
 		if 'height' not in attrs:
-			attrs['height'] = '%fmm' % size[1]
+			attrs['height'] = '%f' % size[1]
 		if 'viewbox' not in attrs:
 			attrs['viewbox'] = '%f %f %f %f' % (0, 0, size[0], size[1])
 		if 'xmlns' not in attrs:
@@ -138,6 +138,10 @@ class g(Object):
 		# Output 
 		header = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n'
 		return header + self._mksvg(style, 'svg', None, attrs, '\n' + ret, id = None)
+	def save(self, filename, size, attrs = {}, style = {}):
+		out = self.svg(size, attrs, style)
+		with open(filename, 'w') as f:
+			f.write(out)
 	def add(self, obj, pos = None, style = None):
 		# Automatically convert objects into Objects.
 		if not isinstance(obj, Object):
@@ -147,7 +151,7 @@ class g(Object):
 					obj = detect[d](obj)
 					break
 			else:
-				raise TypeError('object to add %s has invalid type' % obj)
+				raise TypeError('object to add %s has invalid type' % repr(obj))
 		self.objects.append({'object': obj, 'pos': pos, 'style': style})
 
 # Alias g as svg.
@@ -169,4 +173,14 @@ class image(Object):
 		image.save(f, 'png')
 		self.url = 'data:image/png;base64,' + base64.b64encode(f.getbuffer()).decode('utf-8')
 	def _svg(self, style, pos, obj_index):
-		return self._mksvg(style, 'image', pos, {'xlink:href': self.url, 'width': self.size[0], 'height': self.size[1]})
+		return self._mksvg(style, 'image', pos, {'xlink:href': self.url, 'width': self.size[0], 'height': self.size[1], 'image-rendering': 'pixelated'})
+
+
+class custom_object(Object):
+	def __init__(self, tag, attributes, content = None, id = None):
+		super().__init__(id)
+		self.tag = tag
+		self.attributes = attributes
+		self.content = content
+	def _svg(self, style, pos, obj_index):
+		return self._mksvg(style, self.tag, pos, self.attributes, self.content)

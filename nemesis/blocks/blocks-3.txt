@@ -1,0 +1,3 @@
+; name: [ unlabeled ] [ start | first ] address [ unlabeled  ]  [  end  | last ] address type type
+; supported block types: code, bytedata, worddate, pointers
+enemy_property?: start 0xa640 unlabeled end 0xa648 type bytedata

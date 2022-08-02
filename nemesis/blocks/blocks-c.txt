@@ -1,0 +1,4 @@
+; name: [ unlabeled ] [ start | first ] address [ unlabeled  ]  [  end  | last ] address type type
+; supported block types: code, bytedata, worddate, pointers
+bonus_defs_addr: start 0xb2e4 unlabeled end 0xb2ec type pointers
+bonus_defs: start 0xb2ec unlabeled end 0xb64c type bytedata

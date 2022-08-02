@@ -1,0 +1,391 @@
+Screen buffer is copied from ram to vram
+Ram buffer for name table is at ed00
+On screen move, ram buffer is moved and right column is filled with new data
+initial test: data comes from 8063@b
+
+data is retrieved from around 470b@0
+checks level; special case for levels 5, 9, a, c
+
+It seems to store the data in blocks of 4x4 characters.
+It sends 6 blocks.
+Last block only the first 2 rows are sent, so total 16 (hex) rows.
+
+466a:
+	*e100 = 0
+	*e107 = 0
+	de = *e105	; end level location?
+	hl = level location
+	cmp hl, de
+	if !carry:
+		*e107 = 1
+		return
+	a = *e1c0
+	--a
+	if (!a) return
+	--a
+	if a:
+		; timing of scroll events?
+		*e062 <<= 1	; (rotate)	
+		if !(*e062 & 1): return
+scroll_screen:
+	level_location += 1
+	*e100 = 1
+	move 16 lines of 31 characters 1 space left in name_table_buffer
+	*ec00 = ed1f
+
+fill_new_line:
+	hl = level location
+	de = *e103	; ?
+
+
+draw_new_line_4_chars:
+	hl: *((*ec02)++) << 4
+	de: 8000 for level in (5, 9, a, c), 8ff0 otherwise
+	bc:
+
+	de = source = hl+de + (level_location_l & 3)
+	hl = name table buffer
+
+	start of ec02:
+		hl*2 + bc + de
+
+47ae:
+	de = *(hl + a * 2)
+	
+
+
+Draw from 8044 = 8000 (base) + 40 (interesting part) + 4 (offset in tile)
+40 == 4 * 16 (tile size)
+4 comes from *ec02, which is 97f8; ec02 is incremented while drawing.
+
+initial: *ec02 = hl * 3 + de; de = 97de[level] -> 97de is pointer table to level data.
+
+
+========== pgt
+
+475b: write 3 blocks to vram, pgt
+
+	a=*e003 & 6
+	hl = 4786 + a
+	bc = *(4786+(*e003 & 6))
+	hl = 27b0	; pgt is at 2000, so this is the first line of char f6
+
+	do_4774
+
+	c = b
+	hl = 27b8	; first line of character f7.
+
+	do_4774
+
+	return
+
+do_4774: ; update star pattern
+	a = *e062 & c
+	wrtvrm
+	hl += 800
+	wrtvrm
+	hl += 800
+	wrtvrm
+	return
+
+====================
+wrtvrm at 4949
+
+4998:
+	c=ff
+loop:
+	de' = *hl
+	de--
+	if *de == ff: ret
+	if *de == fe: continue loop
+	b = *de + 2
+
+
+===========
+558a
+	if --e004 < 0: ret
+	a = *e004 ^ 1f
+	hl = 3800 + a
+	16 times:
+		a = e000
+
+
+====
+Looking at filvrm calls
+
+4947: NT
+497b: unknown
+5746: unknown
+5894, 58b7: ct
+58c2, 58cd: ct
+5a84: unknown
+
+
+====
+read_pgt_and_ct:
+	ix[0]: first character
+	ix[2]: bit 2+1: read from {0: 2000, 1: 2000, 2: 2800, 3: 3000} (and same - 2000 for ct)
+	*e101: number of bytes to read
+	*e300: pgt buffer
+	*e700: ct buffer
+
+mirror_level_characters:
+	ix-table for read_pgt_and_ct is at *92fb@5[level] (for hmirror) or *9313@5[level] (for vmirror); 4 bytes per record; followed by a 0 byte.
+	ix+0: first source character in this record, or 0 for end of list
+	ix+1: first target character
+	ix+2: area to read from
+	ix+3: number of characters to mirror
+
+====
+ldirvm_ex_de_hl calls
+	443b	4424: ?	pgt build buffer
+	444a	4424	ct build buffer
+
+	496a	4964: ?	3 screen areas; pgt/ct sized
+
+	587d	5874: ? pgt[10] + d characters	from 5906
+	5889		pgt[20]	+ 1b characters from 596e
+	58a0		pgt[110] + d characters	from 5906
+	58ac		pgt[120] + 1b characters	from 596e
+
+	58d9	58ba: ?	pgt[201] + a characters (digits) from 5906
+
+	5c6c	5bf8: ? name table from buffer
+
+
+====
+49b9:
+	prepare vdp for writing; c' = port
+	a = *de++
+	if (a & 7) == a:
+		49d4
+		write *de to vdp a times (same byte more times)
+		continue from top
+	if (a & 7) == 0:
+		49b3
+		de = *de
+		continue from top
+	else:
+		49ca
+		write a bytes (which is a multiple of 8) from de to vdp
+		continue from top
+
+42fc:
+	load characters 932d
+	load characters 92e3 + 2*level
+	load characters 938e
+	load characters 939b
+
+At those addresses: tables of 6-byte records
+ix + 0: which regions to write (3 bit; 000 means end of list)
+ix + 1,2: address for pgt data
+ix + 3: first target character
+ix + 4,5: address for ct data
+
+4a8a: load characters 98a3
+
+==========
+Finding enemies
+
+Function 48a2 draws cannon on screen buffer
+de == ecac
+ix == e320
+
+*de = e0
+de += 4
+if ix[4] >= b8: ret
+if ix[6] >= f8: ret
+
+hl' = ix[1e:1f]
+a = ix[0b] - 1
+if a == 0:
+	; 48e0: write 2x1 block to screen buffer
+else:
+	; 48c2: write 2x2 block to screen buffer.
+	de = hl
+	hl = 4 * ix[0c] + 91d1
+	ldi, ldi
+	de += 20 - 2
+	ldi, ldi
+
+
+Cannon placed in enemy list at e640 (list starts at e600 (wasn't that e300?))
+it's a cannon, because ix[0] == 1
+the 1 is set at 90f9@2: this is probably the "place cannon"-function
+it's called when bit 6 of c is zero at 90ee@2
+c is read from 927e@2, which is computed from
+	90d4:
+		de = *(9262[2*level]) + 3 * *e108
+
+Enemy data:
+	12: cannon at bottom		y = 12
+	21: cannon at top		y = 1
+	52: red cannon at bottom	y = 12
+
+	Check: y = data & 0x1f; bit 5: top or bottom; bit 6: red or blue
+
+
+==================
+Secret level entrance.
+
+6fb9: set level
+6d79: set level to 9
+Flags in e1c0, e107 may block secret level entrance
+e1c0 seems to be the flag for "we hit a secret".
+e1c0 is written at b130@3
+At b0f1 the selection for source level is made, with special stuff for the last one, using e1c1
+
+Level 2: b11e; hl = 1cf
+Level 3: b123; hl = 19f
+Other (level 1+4): b0ff; hl = 1c0 (only if 3 triggers are hit)
+Level 7: b119; hl = 1a0
+Last one: hl = 1c0
+
+Then b126: set up things for entering secret level. hl is the position to which to fast forward?
+
+b0dd is checking if the player is at the secret trigger
+Let's find the place where the trigger is written.
+
+This happens when it enters the screen, code is at b0c6
+
+Code starts at b06a; does things for levels 1 (b086), 2 (b091), 3 (b09a), 4 (b0a3), 7 (b0b8): all secret things.
+
+Level 1: x == 0fc, y = 88, c = 2
+Level 2: x == 190, y = 88, c = 1
+Level 3: x == 12a, y = 30, c = 1
+Level 4:
+	x == 0c0, y = 10, c = 3
+	x == 104, y = 10, c = 4
+Level 7: x = 177, y = 38, c = 1
+
+c goes into e1c1
+
+
+
+=====================
+Bonus item analysis.
+
+Item appears on screen, buffer at ee14, written by 48cf
+Function starts at 48a2: write_enemy_to_buffer (not just enemies apparently)
+Called from 485d, which starts at 4827:
+	set page 456
+	ix = pgt_build_buffer (enemy list?)
+	return if ix[0] == 0
+	if ix[0] in (00, 19):
+		# 4884
+	elif ix[b] == 0:
+		# 488d
+	else:
+		# 485c
+		write_enemy_to_buffer
+
+"enemy" is filled at e30c from 7503@1
+
+It fills in ix+*; record definition:
+
+00	*e120
+01	0
+02	0
+03
+04	*ec19
+05
+06	*ec1a
+07
+08
+09
+0a
+0b	6ba3[*e120 * 4 + 0]
+0c	6ba3[*e120 * 4 + 1] enemy type (37/38 == bonus thing); filled from B
+0d	6ba3[*e120 * 4 + 2]
+0e	*e121
+0f
+10
+11
+12
+13	initially set to 0
+14	initially set to 0
+15	initially set to 0
+16	initially set to 0
+17	filled from C
+18
+19
+1a
+1b
+1c
+1d
+1e
+1f
+
+74f4: set bonus item to 37 or 38, based on ix[e] (if it is 3, it's 37, otherwise 38)
+
+e30e (secret type) is written by 6b0c@1; function starts at 6ace@1
+	
+e120/e121 is enemy type; e120 written by 6a76, where does it come from?
+5d79 sets a,c to 19, 3+optional 1
+
+
+5d81:
+	use page b
+	use page c
+	hl = *e127 * 3 + b2d2[2*level]
+	c, e, d = hl[0:3]
+	use page 2
+	use page 3
+	hl = level_location
+	compare hl, de
+
+
+Bonus item types:
+
+0	green: initially hidden
+1	yellow: initially hidden
+2	
+3	
+4	
+5	yellow: 100, 200, 500, etc up to 10000, initially exposed
+6	green
+7	
+
+bit 0: green(0)/yellow(1)
+bit 1: Repeats 8 times; forced yellow
+bit 2: initially hidden(0)/visible(1)
+
+
+
+===============
+Points for bonus items
+
+55b4: writing to score.
+	a = *e002 (= 40)
+	a *= 2
+	return if !(a & 80)
+	hl = e05c	; lsb of score for player 1
+	if carry: hl = e058	; lsb of score for player 2?
+	a = *hl + e
+	daa
+	*hl = a
+	same thing for ++hl and d
+summary: add de to player score.
+
+47ae: compute points for bonus item?
+
+9251: set c if bonus scores need to be reset
+
+
+
+======
+Finding moai
+First character is written from 4918, read from 64d4@1
+de gets to be that value at 626a@1
+Source is enemy record at e708
+e700 (first moai) is written at 62fb@1
+Only for level 3, run code at 6332@1
+At 62dc@1, hl is set to start of computation at 64fa
+64fa(+2): pointer table for levels
+
+
+===============
+Problems:
+/ Bottom cannons in skeleton level are missing
+- Bonus item value seems to change. Why?
+- non-cannon enemies are not generated

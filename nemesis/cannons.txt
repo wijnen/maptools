@@ -1,0 +1,22 @@
+09	red bottom [0]
+0f	blue bottom [0]
+15	red top [2]
+1b	blue top [2]
+23
+2d
+39
+3f
+
+
+Level 1: rb bb -- bt --
+Level 2: bb -- rt bt rb
+Level 3: -- rb rt -- --
+Level 4: -- bb -- bt --
+Level 5: -- rb -- -- -- -- rt rb
+Level 6: -- -- -- -- --
+Level 7: rb bb -- bt --
+Level 8: rb bb -- bt -- rt
+Level 9: bb -- rt bt rb
+Level a: bb -- rt bt rb
+Level b: bb -- rt bt rb
+Level c: bb -- rt bt rb

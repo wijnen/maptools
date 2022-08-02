@@ -1,0 +1,9 @@
+; name: [ unlabeled ] [ start | first ] address [ unlabeled  ]  [  end  | last ] address type type
+; supported block types: code, bytedata, worddate, pointers
+star_blink_pattern: start 0x4786 unlabeled end 0x478e type bytedata
+some_unknown_data: start 0x5588 unlabeled end 0x558a type bytedata
+digits_pgt_patterns: start 0x5906 unlabeled end 0x596e type bytedata
+letters_pgt_patterns: start 0x596e unlabeled end 0x5a46 type bytedata
+special_level_position: start 0x4214 unlabeled end 0x422a type worddata
+level_data: start 0x449f unlabeled end 0x44e7 type worddata
+enemy_type_switch_data: start 0x5dfd unlabeled end 0x5e3b type pointers

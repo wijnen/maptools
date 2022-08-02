@@ -2,6 +2,10 @@
 # vim: set foldmethod=marker :
 
 from PIL import Image
+import svgmap
+import struct
+
+rom = open('nemesis.rom', 'rb').read()
 
 def addr2rom(address, page): # {{{
 	'Convert address and page to an address in the rom file. page may be any of the 3 pages (so 6000,4 is the same as 6000,5)'
@@ -14,6 +18,12 @@ def addr2rom(address, page): # {{{
 		base = address - 0x6000 # address from start of (changed) mappings.
 		firstpage = ((page - 1) // 3) * 3 + 1   # First page of the set of 3.
 	return base + firstpage * 0x2000
+# }}}
+
+def read_word(addr, page): # {{{
+	romaddr = addr2rom(addr, page)
+	word = struct.unpack('<H', rom[romaddr:romaddr + 2])[0]
+	return word
 # }}}
 
 # This palette is hardcoded into the MSX1 VDP.

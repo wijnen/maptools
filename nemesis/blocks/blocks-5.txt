@@ -1,0 +1,4 @@
+; name: [ unlabeled ] [ start | first ] address [ unlabeled  ]  [  end  | last ] address type type
+; supported block types: code, bytedata, worddate, pointers
+level_hmirror_defs: start 0x92fd unlabeled end 0x932d type pointers
+level_1_hmirror: start 0x96ae unlabeled end 0x96c7 type bytedata

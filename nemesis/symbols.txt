@@ -1,0 +1,62 @@
+; include "filename"
+; symbol: equ value
+
+; functions
+wrtvrm: equ 0x4d
+filvrm: equ 0x56
+ldirmv: equ 0x59
+ldirvm: equ 0x5c
+hl+=a: equ 0x405d
+de+=a: equ 0x4062
+switch(a): equ 0x4067
+init_level: equ 0x41c3
+mirror_level_characters: equ 0x433f
+write_pgt_and_ct_3_times: equ 0x4371
+write_pgt_and_ct: equ 0x4398
+vmirror_characters: equ 0x43c6
+hmirror_characters: equ 0x43f2
+write_pgt_and_ct_to_vram: equ 0x4408
+read_pgt_and_ct: equ 0x4450
+scroll_screen: equ 0x468c
+fill_new_line: equ 0x46ae
+draw_new_line: equ 0x46e1
+draw_new_intro_line: equ 0x4738
+draw_new_line_4_chars: equ 0x470b
+draw_new_line_2_chars: equ 0x472a
+update_star_pgt: equ 0x475b
+update_star_pattern: equ 0x4774
+de=*(hl+2a): equ 0x47ae
+write_enemy_to_buffer: equ 0x48a2
+write_2x1_enemy: equ 0x48e0
+prepare_VDP_write: equ 0x494a
+ldirvm_ex_de_hl: equ 0x4960
+something_fill_vdp_name_table: equ 0x4998
+decode_characters_and_write_to_vdp: equ 0x49b9
+some_vdp_write_for_unknown_purpose1: equ 0x4bae
+some_vdp_write_for_unknown_purpose2: equ 0x4ead
+setup_characters?: equ 0x5558
+update_vdp_nt_and_sat: equ 0x558a
+add_de_to_score: equ 0x55b4
+setup_font: equ 0x5874
+hl=h*e: equ 0x6743
+
+; variables
+sub_x_position: equ 0xe003
+level: equ 0xe061
+star_bitmask: equ 0xe062
+level_location_l: equ 0xe063
+level_location_h: equ 0xe064
+level_phase: equ 0xe065
+level_intro_len_l: equ 0xe101
+level_intro_len_h: equ 0xe102
+level_end_location_l: equ 0xe103
+level_end_location_h: equ 0xe104
+boss_location_l: equ 0xe105
+boss_location_h: equ 0xe106
+secret_trigger_y: equ 0xe1c2
+secret_trigger_x: equ 0xe1c3
+player_y: equ 0xe204
+player_x: equ 0xe206
+pgt_build_buffer: equ 0xe300
+ct_build_buffer: equ 0xe700
+name_table_buffer: equ 0xed00

@@ -1,0 +1,9 @@
+; name: [ unlabeled ] [ start | first ] address [ unlabeled  ]  [  end  | last ] address type type
+; supported block types: code, bytedata, worddate, pointers
+switch-block0: start 0x607e unlabeled end 0x6086 type pointers
+switch-level: start 0x6cd7 unlabeled end 0x6cef type pointers
+enemy_defs: start 0x6ba3 unlabeled end 0x6c22 type bytedata 
+bonus_scores: start 0x7563 unlabeled end 0x7571 type worddata
+enemy?_pointers: start 0x64fc unlabeled end 0x6512 type pointers
+; This does not include last level because I'm too lazy to find the end
+enemy?_data: start 0x6512 unlabeled end 0x65da type bytedata
